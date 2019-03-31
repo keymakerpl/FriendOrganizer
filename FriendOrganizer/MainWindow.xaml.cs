@@ -12,17 +12,25 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using FriendOrganizer.UI.ViewModel;
 
-namespace FriendOrganizer
+namespace FriendOrganizer.UI
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
-        public MainWindow()
+        private MainViewModel _mainViewModel;
+
+        public MainWindow(MainViewModel viewModel)
         {
             InitializeComponent();
+            _mainViewModel = viewModel;
+            DataContext = viewModel;
+            Loaded += OnLoaded;
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            _mainViewModel.Load();
         }
     }
 }

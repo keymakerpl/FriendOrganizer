@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace FriendOrganizer.Properties
+namespace FriendOrganizer.UI.Properties
 {
 
 

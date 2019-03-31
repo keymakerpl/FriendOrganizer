@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using FriendOrganizer.Model;
 
-namespace FriendOrganizer.Data
+namespace FriendOrganizer.UI.Data
 {
-    public class FriendDataService
+    public class FriendDataService : IFriendDataService
     {
 
         //TODO: Load from DB
