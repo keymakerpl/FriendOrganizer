@@ -1,23 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FriendOrganizer.DataAcces;
 using FriendOrganizer.Model;
 
 namespace FriendOrganizer.UI.Data
 {
     public class FriendDataService : IFriendDataService
     {
+        private Func<FriendOrganizerDbContext> _contextCreator;
 
-        //TODO: Load from DB
+        /// <summary>
+        /// Autofec zajmie się wstrzykiwaniem zależności
+        /// </summary>
+        /// <param name="func"></param>
+        public FriendDataService(Func<FriendOrganizerDbContext> contextCreatorFunc)
+        {
+            _contextCreator = contextCreatorFunc;
+        } 
+        
         public IEnumerable<Friend> GetAll()
         {
-            yield return new Friend() { FirstName = "Jan", LastName = "Nowak", Email = "nowak@em.pl"};
-            yield return new Friend() { FirstName = "Anna", LastName = "Nowak", Email = "nowak2@em.pl" };
-            yield return new Friend() { FirstName = "Marek", LastName = "Kawałek", Email = "32234@em.pl" };
-            yield return new Friend() { FirstName = "Stefan", LastName = "Wolny", Email = "wlk@em.pl" };
-            yield return new Friend() { FirstName = "Marta", LastName = "Faworek", Email = "fww2@em.pl" };
+            using (var ctx = _contextCreator())
+            {
+                return ctx.Friends.AsNoTracking().ToList();
+            }
+
+        }
+
+        public async Task<List<Friend>> GetAllAsync()
+        {
+            using (var ctx = _contextCreator())
+            {
+                return await ctx.Friends.AsNoTracking().ToListAsync();
+            }
 
         }
     }

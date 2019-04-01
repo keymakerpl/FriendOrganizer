@@ -29,6 +29,15 @@ namespace FriendOrganizer.UI.ViewModel
             }
         }
 
+        public async Task LoadAsync()
+        {            
+            Friends.Clear();
+            foreach (var friend in await _friendDataService.GetAllAsync())
+            {
+                Friends.Add(friend);
+            }
+        }
+
         public ObservableCollection<Friend> Friends { get; set; }
 
         public Friend SelectedFriend

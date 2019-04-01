@@ -48,6 +48,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FriendOrganizerDbContext.cs" />
+    <Compile Include="Migrations\201904011053396_InitialDatabase.cs" />
+    <Compile Include="Migrations\201904011053396_InitialDatabase.Designer.cs">
+      <DependentUpon>201904011053396_InitialDatabase.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -59,6 +64,11 @@
       <Project>{6dfc76e7-1247-444f-bf58-811841343b50}</Project>
       <Name>FriendOrganizer.Model</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\201904011053396_InitialDatabase.resx">
+      <DependentUpon>201904011053396_InitialDatabase.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
