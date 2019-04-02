@@ -1,50 +1,30 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using FriendOrganizer.UI.Data;
-using FriendOrganizer.Model;
 
 namespace FriendOrganizer.UI.ViewModel
 {
     public class MainViewModel : ViewModelBase
     {
-        private IFriendDataService _friendDataService;
-        private Friend _selectedFriend;
+        public INavigationViewModel NavigationViewModel { get; }
 
-        public MainViewModel(IFriendDataService friendDataService)
+        /// <summary>
+        /// Główne okno programu, przyjmuje jako parametr Nawigator
+        /// </summary>
+        /// <param name="navigationViewModel"></param>
+        public MainViewModel(INavigationViewModel navigationViewModel)
         {
-            Friends = new ObservableCollection<Friend>();
-            _friendDataService = friendDataService;
+            NavigationViewModel = navigationViewModel;
         }
 
         public void Load()
         {
-            Friends.Clear();
-            foreach (var friend in _friendDataService.GetAll())
-            {
-                Friends.Add(friend);
-            }
+            throw new NotImplementedException();
         }
 
         public async Task LoadAsync()
-        {            
-            Friends.Clear();
-            foreach (var friend in await _friendDataService.GetAllAsync())
-            {
-                Friends.Add(friend);
-            }
-        }
-
-        public ObservableCollection<Friend> Friends { get; set; }
-
-        public Friend SelectedFriend
         {
-            get { return _selectedFriend; }
-            set { _selectedFriend = value; OnPropertyChanged();}
-        }        
-        
+            await NavigationViewModel.LoadAsync();
+        }
+            
     }
 }

@@ -12,16 +12,26 @@ namespace FriendOrganizer.UI.Startup
 {
     public class Bootstrapper
     {
+        /// <summary>
+        /// Kontener do wiązania widok-model widoku. DI.
+        /// </summary>
+        /// <returns></returns>
         public IContainer Bootstrap()
         {
             var builder = new ContainerBuilder();
 
-            //DbContext
+            //Baza danych DbContext, inicjalizacja, zarzadzanie itd.
             builder.RegisterType<FriendOrganizerDbContext>().AsSelf();
 
             //ViewModel - View
             builder.RegisterType<MainWindow>().AsSelf();
             builder.RegisterType<MainViewModel>().AsSelf();
+            builder.RegisterType<NavigationViewModel>().As<INavigationViewModel>(); //nawigacja
+            
+            //Usługa przeglądania itemów na listach
+            builder.RegisterType<LookupDataService>().AsImplementedInterfaces();
+
+            //Usługi bazodanowe
             builder.RegisterType<FriendDataService>().As<IFriendDataService>();
 
             return builder.Build();

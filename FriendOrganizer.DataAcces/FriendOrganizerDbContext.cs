@@ -1,7 +1,7 @@
 ﻿using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
-using FriendOrganizer.Model;
 using System.Data.Entity.ModelConfiguration.Conventions;
+using FriendOrganizer.Model;
 
 namespace FriendOrganizer.DataAcces
 {
@@ -15,12 +15,16 @@ namespace FriendOrganizer.DataAcces
 
         public DbSet<Friend> Friends { get; set; }
 
+        /// <summary>
+        /// Tutaj ustawiamy jak ma być tworzona baza
+        /// </summary>
+        /// <param name="modelBuilder"></param>
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
 
-            //Fluent API
+            //Fluent API - zakomentowane bo użyjemy atrybutów, a następnie update-migration
             //modelBuilder.Configurations.Add(new FriendConfiguration());
 
         }
