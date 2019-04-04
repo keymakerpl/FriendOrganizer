@@ -13,7 +13,7 @@ namespace FriendOrganizer.UI.Startup
     public class Bootstrapper
     {
         /// <summary>
-        /// Kontener do wiązania widok-model widoku. DI.
+        /// Kontener do wiązania widok-model widoku. Depency Injection
         /// </summary>
         /// <returns></returns>
         public IContainer Bootstrap()
@@ -26,8 +26,9 @@ namespace FriendOrganizer.UI.Startup
             //ViewModel - View
             builder.RegisterType<MainWindow>().AsSelf();
             builder.RegisterType<MainViewModel>().AsSelf();
-            builder.RegisterType<NavigationViewModel>().As<INavigationViewModel>(); //nawigacja
-            
+            builder.RegisterType<NavigationViewModel>().As<INavigationViewModel>();
+            builder.RegisterType<FriendDetailViewModel>().As<IFriendDetailViewModel>();
+
             //Usługa przeglądania itemów na listach
             builder.RegisterType<LookupDataService>().AsImplementedInterfaces();
 
