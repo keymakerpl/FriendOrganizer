@@ -9,6 +9,7 @@ using FriendOrganizer.Model;
 using FriendOrganizer.UI.Data;
 using FriendOrganizer.UI.Event;
 using FriendOrganizer.UI.ViewModel;
+using FriendOrganizer.UI.Wrapper;
 using Prism.Commands;
 using Prism.Events;
 
@@ -17,10 +18,10 @@ namespace FriendOrganizer.UI.ViewModel
     public class FriendDetailViewModel : ViewModelBase, IFriendDetailViewModel
     {
         private IFriendDataService _dataService;
-        private Friend _friend;
+        private FriendWrapper _friend;
         private IEventAggregator _eventAggregator;
 
-        public Friend Friend
+        public FriendWrapper Friend
         {
             get { return _friend; }
             set { _friend = value; OnPropertyChanged(); }
@@ -36,15 +37,25 @@ namespace FriendOrganizer.UI.ViewModel
             SaveCommand = new DelegateCommand(OnSaveExecute, OnSaveCanExecute);
         }
 
-        private bool OnSaveCanExecute()
+        public async Task LoadAsync(int friendId)
         {
-            //TODO: Validation
-            return true;
+            var friend = await _dataService.GetByIdAsync(friendId);
+            Friend = new FriendWrapper(friend);
+
+            //Po załadowaniu detala i każdej zmianie propertisa sprawdzamy CanExecute Sejwa
+            Friend.PropertyChanged += ((sender, args) => { ((DelegateCommand) SaveCommand).RaiseCanExecuteChanged(); });
+        }
+
+        public ICommand SaveCommand { get; }
+
+        private bool OnSaveCanExecute()
+        {            
+            return Friend != null && !Friend.HasErrors;
         }
 
         private async void OnSaveExecute()
         {
-            await _dataService.SaveAsync(Friend);
+            await _dataService.SaveAsync(Friend.Model);
             _eventAggregator.GetEvent<AfterFriendSavedEvent>()
                 .Publish(new AfterFriendSavedEventArgs
                 {
@@ -56,13 +67,6 @@ namespace FriendOrganizer.UI.ViewModel
         private async void OnOpenFriendDetailView(int friendId)
         {
             await LoadAsync(friendId);
-        }
-
-        public async Task LoadAsync(int friendId)
-        {
-            Friend = await _dataService.GetByIdAsync(friendId);
-        }
-
-        public ICommand SaveCommand { get; }
+        }        
     }
 }

@@ -4,6 +4,9 @@ using FriendOrganizer.UI.Annotations;
 
 namespace FriendOrganizer.UI.ViewModel
 {
+    /// <summary>
+    /// Klasa bazowa modelu widoku, odpala event przy zmianie propertisa.
+    /// </summary>
     public class ViewModelBase : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
