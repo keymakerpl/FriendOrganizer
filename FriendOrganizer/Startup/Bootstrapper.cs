@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Autofac;
+﻿using Autofac;
 using FriendOrganizer.DataAcces;
-using FriendOrganizer.UI.Data;
+using FriendOrganizer.UI.Data.Lookups;
+using FriendOrganizer.UI.Data.Repositories;
 using FriendOrganizer.UI.ViewModel;
+using FriendOrganizer.View.UI.Services;
 using Prism.Events;
 
 namespace FriendOrganizer.UI.Startup
@@ -33,11 +30,14 @@ namespace FriendOrganizer.UI.Startup
             builder.RegisterType<NavigationViewModel>().As<INavigationViewModel>();
             builder.RegisterType<FriendDetailViewModel>().As<IFriendDetailViewModel>();
 
+            //Serwisy
+            builder.RegisterType<MessageDialogService>().As<IMessageDialogService>(); //MessageBox service
+
             //Usługa przeglądania itemów na listach
             builder.RegisterType<LookupDataService>().AsImplementedInterfaces();
 
             //Usługi bazodanowe, wrapper
-            builder.RegisterType<FriendDataService>().As<IFriendDataService>();
+            builder.RegisterType<FriendRepository>().As<IFriendRepository>();
 
             return builder.Build();
         }

@@ -10,7 +10,7 @@ namespace FriendOrganizer.UI
     {
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            //var mainWindowView = new MainWindow(new MainViewModel(new FriendDataService()));
+            //var mainWindowView = new MainWindow(new MainViewModel(new FriendRepository()));
             //mainWindowView.Show();
 
             var bootstrapper = new Bootstrapper();

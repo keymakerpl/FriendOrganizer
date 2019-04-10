@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using FriendOrganizer.DataAcces;
 using FriendOrganizer.Model;
 
-namespace FriendOrganizer.UI.Data
+namespace FriendOrganizer.UI.Data.Lookups
 {
     public class LookupDataService : IFriendLookupDataService
     {
