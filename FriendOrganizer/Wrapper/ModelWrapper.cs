@@ -31,7 +31,7 @@ namespace FriendOrganizer.UI.Wrapper
         }
 
         /// <summary>
-        /// Walidacja 2 etapowa, 1.Adnotacje 2.Custom error
+        /// Walidacja 2 etapowa: 1.Adnotacje 2.Custom error
         /// </summary>
         /// <param name="propertyName"></param>
         private void ValidatePropertyInternal(string propertyName, object currentValue)

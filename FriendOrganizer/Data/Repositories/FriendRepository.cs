@@ -16,7 +16,7 @@ namespace FriendOrganizer.UI.Data.Repositories
         /// <summary>
         /// Autofec zajmie się wstrzykiwaniem zależności
         /// </summary>
-        /// <param name="func"></param>
+        /// <param name="context"></param>
         public FriendRepository(FriendOrganizerDbContext context)
         {
             _context = context;
@@ -26,7 +26,6 @@ namespace FriendOrganizer.UI.Data.Repositories
         {
                 return _context.Friends.AsNoTracking().ToList();           
         }
-
 
         public async Task<Friend> GetByIdAsync(int friendId)
         {
@@ -46,6 +45,16 @@ namespace FriendOrganizer.UI.Data.Repositories
         public async Task<List<Friend>> GetAllAsync()
         {
                 return await _context.Friends.AsNoTracking().ToListAsync();           
+        }
+
+        public void Add(Friend friend)
+        {
+            _context.Friends.Add(friend);
+        }
+
+        public void Remove(Friend friendModel)
+        {
+            _context.Friends.Remove(friendModel);
         }
     }
 }

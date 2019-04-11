@@ -1,24 +1,28 @@
 ﻿using System;
 using System.Threading.Tasks;
+using System.Windows.Input;
+using FriendOrganizer.Event;
 using FriendOrganizer.UI.Event;
 using Prism.Events;
 using FriendOrganizer.View.UI.Services;
+using Prism.Commands;
 
 namespace FriendOrganizer.UI.ViewModel
 {
     public class MainViewModel : ViewModelBase
     {
-        private IEventAggregator _eventAggregator;
-        private Func<IFriendDetailViewModel> _friendDetailViewModelCreator { get; }
         public INavigationViewModel NavigationViewModel { get; }
+        private Func<IFriendDetailViewModel> _friendDetailViewModelCreator { get; }
         private IFriendDetailViewModel _friendDetailViewModel;
+        private IEventAggregator _eventAggregator;
         private IMessageDialogService _messageDialogService;
-
         public IFriendDetailViewModel FriendDetailViewModel
         {
             get => _friendDetailViewModel;
             private set { _friendDetailViewModel = value; OnPropertyChanged();}
         }
+        public ICommand CreateNewFriendCommand { get; }
+
 
         /// <summary>
         /// Główne okno programu, przyjmuje jako parametr Nawigator
@@ -36,9 +40,12 @@ namespace FriendOrganizer.UI.ViewModel
 
             _eventAggregator.GetEvent<OpenFriendDetailViewEvent>()
                 .Subscribe(OnOpenFriendDetailView);
+            _eventAggregator.GetEvent<AfterFriendDeletedEvent>().Subscribe(AfterFriendDeleted);
+
+            CreateNewFriendCommand = new DelegateCommand(OnCreateNewFriendExecute);
 
             NavigationViewModel = navigationViewModel;
-        }
+        }        
 
         public void Load()
         {
@@ -50,9 +57,8 @@ namespace FriendOrganizer.UI.ViewModel
             await NavigationViewModel.LoadAsync();
         }
 
-        private async void OnOpenFriendDetailView(int friendId)
+        private async void OnOpenFriendDetailView(int? friendId)
         {
-            //TODO: remove from view model and move as incjected from class
             if (FriendDetailViewModel != null && FriendDetailViewModel.HasChanges)
             {
                 var result = _messageDialogService.ShowOkCancelDialog("You made changes. Continue?", "Has been changed");
@@ -61,6 +67,17 @@ namespace FriendOrganizer.UI.ViewModel
 
             FriendDetailViewModel = _friendDetailViewModelCreator();
             await FriendDetailViewModel.LoadAsync(friendId);
+        }
+
+        private void AfterFriendDeleted(int friendId)
+        {
+            FriendDetailViewModel = null;
+        }
+
+        private void OnCreateNewFriendExecute()
+        {
+            //Korzystamy z tej samej metody lecz bez id w parametrze
+            OnOpenFriendDetailView(null);
         }
     }
 }
