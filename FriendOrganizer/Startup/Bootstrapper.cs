@@ -34,7 +34,7 @@ namespace FriendOrganizer.UI.Startup
             builder.RegisterType<MessageDialogService>().As<IMessageDialogService>(); //MessageBox service
 
             //Usługa przeglądania itemów na listach
-            builder.RegisterType<LookupDataService>().AsImplementedInterfaces();
+            builder.RegisterType<LookupDataService>().AsImplementedInterfaces(); // Skorzysta z interfejsu który jest wymagany, AsImplemented
 
             //Usługi bazodanowe, wrapper
             builder.RegisterType<FriendRepository>().As<IFriendRepository>();

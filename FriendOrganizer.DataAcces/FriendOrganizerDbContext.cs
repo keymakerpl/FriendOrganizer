@@ -13,7 +13,15 @@ namespace FriendOrganizer.DataAcces
             
         }
 
+        /// <summary>
+        /// Lista
+        /// </summary>
         public DbSet<Friend> Friends { get; set; }
+
+        /// <summary>
+        /// Ulubione języki
+        /// </summary>
+        public DbSet<ProgrammingLanguage> ProgrammingLanguages { get; set; }
 
         /// <summary>
         /// Tutaj ustawiamy jak ma być tworzona baza
