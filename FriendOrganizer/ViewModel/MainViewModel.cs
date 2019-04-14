@@ -13,16 +13,16 @@ namespace FriendOrganizer.UI.ViewModel
     {
         public INavigationViewModel NavigationViewModel { get; }
         private Func<IFriendDetailViewModel> _friendDetailViewModelCreator { get; }
-        private IFriendDetailViewModel _friendDetailViewModel;
         private IEventAggregator _eventAggregator;
         private IMessageDialogService _messageDialogService;
-        public IFriendDetailViewModel FriendDetailViewModel
-        {
-            get => _friendDetailViewModel;
-            private set { _friendDetailViewModel = value; OnPropertyChanged();}
-        }
-        public ICommand CreateNewFriendCommand { get; }
+        public ICommand CreateNewDetailCommand { get; }
 
+        private IDetailViewModel _detailViewModel;
+        public IDetailViewModel DetailViewModel
+        {
+            get => _detailViewModel;
+            private set { _detailViewModel = value; OnPropertyChanged();}
+        }
 
         /// <summary>
         /// Główne okno programu, przyjmuje jako parametr Nawigator
@@ -38,11 +38,13 @@ namespace FriendOrganizer.UI.ViewModel
             _friendDetailViewModelCreator = friendDetailViewModelCreator;
             _messageDialogService = messageService;
 
-            _eventAggregator.GetEvent<OpenFriendDetailViewEvent>()
-                .Subscribe(OnOpenFriendDetailView);
-            _eventAggregator.GetEvent<AfterFriendDeletedEvent>().Subscribe(AfterFriendDeleted);
+            _eventAggregator.GetEvent<OpenDetailViewEvent>()
+                .Subscribe(OnOpenDetailView);
 
-            CreateNewFriendCommand = new DelegateCommand(OnCreateNewFriendExecute);
+            _eventAggregator.GetEvent<AfterDetailDeletedEvent>()
+                .Subscribe(AfterDetailDeleted);
+
+            CreateNewDetailCommand = new DelegateCommand<Type>(OnCreateNewDetailExecute);
 
             NavigationViewModel = navigationViewModel;
         }        
@@ -57,27 +59,36 @@ namespace FriendOrganizer.UI.ViewModel
             await NavigationViewModel.LoadAsync();
         }
 
-        private async void OnOpenFriendDetailView(int? friendId)
+        private void OnCreateNewDetailExecute(Type viewModelType)
         {
-            if (FriendDetailViewModel != null && FriendDetailViewModel.HasChanges)
+            //Korzystamy z tej samej metody lecz bez id w parametrze
+            OnOpenDetailView(new OpenDetailViewEventArgs() { ViewModelName = viewModelType.Name });
+        }
+
+        private async void OnOpenDetailView(OpenDetailViewEventArgs args)
+        {
+            if (DetailViewModel != null && DetailViewModel.HasChanges)
             {
                 var result = _messageDialogService.ShowOkCancelDialog("You made changes. Continue?", "Has been changed");
                 if (result == MessageDialogRessult.Cancel) return;
             }
 
-            FriendDetailViewModel = _friendDetailViewModelCreator();
-            await FriendDetailViewModel.LoadAsync(friendId);
+            //ustawiamy odpowieni model
+            switch (args.ViewModelName)
+            {
+                case nameof(FriendDetailViewModel):
+                    DetailViewModel = _friendDetailViewModelCreator();
+                    break;
+            }
+
+            await DetailViewModel.LoadAsync(args.Id);
         }
 
-        private void AfterFriendDeleted(int friendId)
+        private void AfterDetailDeleted(AfterDetailDeletedEventArgs args)
         {
-            FriendDetailViewModel = null;
+            DetailViewModel = null;
         }
 
-        private void OnCreateNewFriendExecute()
-        {
-            //Korzystamy z tej samej metody lecz bez id w parametrze
-            OnOpenFriendDetailView(null);
-        }
+        
     }
 }

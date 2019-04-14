@@ -7,15 +7,10 @@ using FriendOrganizer.Model;
 
 namespace FriendOrganizer.UI.Data.Repositories
 {
-    public interface IFriendRepository
+    public interface IFriendRepository : IGenericRepository<Friend>
     {
         IEnumerable<Friend> GetAll();
         Task<List<Friend>> GetAllAsync();
-        Task<Friend> GetByIdAsync(int friendId);
-        Task SaveAsync();
-        bool HasChanges();
-        void Add(Friend friend);
-        void Remove(Friend friendModel);
         void RemovePhoneNumber(FriendPhoneNumber selectedNumberModel);
     }
 }

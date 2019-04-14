@@ -9,57 +9,31 @@ using FriendOrganizer.Model;
 
 namespace FriendOrganizer.UI.Data.Repositories
 {
-    public class FriendRepository : IFriendRepository
+    public class FriendRepository : GenericRepository<Friend, FriendOrganizerDbContext>, IFriendRepository
     {
-        private FriendOrganizerDbContext _context;
-
-        /// <summary>
-        /// Autofec zajmie się wstrzykiwaniem zależności
-        /// </summary>
-        /// <param name="context"></param>
-        public FriendRepository(FriendOrganizerDbContext context)
+        public FriendRepository(FriendOrganizerDbContext context) : base(context)
         {
-            _context = context;
-        } 
-        
+            
+        }
+
+        public override async Task<Friend> GetByIdAsync(int id)
+        {
+            return await Context.Set<Friend>().Include(f => f.PhoneNumbers).SingleAsync(f => f.Id == id);
+        }
+
         public IEnumerable<Friend> GetAll()
         {
-                return _context.Friends.AsNoTracking().ToList();           
-        }
-
-        public async Task<Friend> GetByIdAsync(int friendId)
-        {
-            return await _context.Friends.Include(f => f.PhoneNumbers).SingleAsync(f => f.Id == friendId);
-        }
-
-        public async Task SaveAsync()
-        {            
-                await _context.SaveChangesAsync();            
-        }
-
-        public bool HasChanges()
-        {
-            return _context.ChangeTracker.HasChanges();
+            throw new NotImplementedException();
         }
 
         public async Task<List<Friend>> GetAllAsync()
         {
-                return await _context.Friends.AsNoTracking().ToListAsync();           
-        }
-
-        public void Add(Friend friend)
-        {
-            _context.Friends.Add(friend);
-        }
-
-        public void Remove(Friend friendModel)
-        {
-            _context.Friends.Remove(friendModel);
+            throw new NotImplementedException();
         }
 
         public void RemovePhoneNumber(FriendPhoneNumber selectedNumberModel)
         {
-            _context.FriendPhoneNumbers.Remove(selectedNumberModel);
+            Context.FriendPhoneNumbers.Remove(selectedNumberModel);
         }
     }
 }
