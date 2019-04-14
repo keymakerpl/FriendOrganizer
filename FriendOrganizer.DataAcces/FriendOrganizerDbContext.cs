@@ -24,6 +24,11 @@ namespace FriendOrganizer.DataAcces
         public DbSet<ProgrammingLanguage> ProgrammingLanguages { get; set; }
 
         /// <summary>
+        /// Ulubione telefony, relacja one-to-many
+        /// </summary>
+        public DbSet<FriendPhoneNumber> FriendPhoneNumbers { get; set; }
+
+        /// <summary>
         /// Tutaj ustawiamy jak ma być tworzona baza
         /// </summary>
         /// <param name="modelBuilder"></param>

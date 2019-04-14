@@ -26,6 +26,11 @@ namespace FriendOrganizer.DataAcces.Migrations
                 new ProgrammingLanguage(){Name = "TypeScript"},
                 new ProgrammingLanguage(){Name = "Java"},
                 new ProgrammingLanguage(){Name = "Objective-C"});
+
+            context.SaveChanges();
+
+            context.FriendPhoneNumbers.AddOrUpdate(nm => nm.Number,
+                new FriendPhoneNumber(){Number = "+48 12345678", FriendId = context.Friends.First().Id});
         }
     }
 }

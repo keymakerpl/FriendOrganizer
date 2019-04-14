@@ -1,4 +1,8 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using FriendOrganizer.Event;
@@ -7,6 +11,7 @@ using FriendOrganizer.UI.Data.Lookups;
 using FriendOrganizer.UI.Data.Repositories;
 using FriendOrganizer.UI.Wrapper;
 using FriendOrganizer.View.UI.Services;
+using FriendOrganizer.Wrapper;
 using Prism.Commands;
 using Prism.Events;
 
@@ -16,13 +21,26 @@ namespace FriendOrganizer.UI.ViewModel
     {
         public ICommand SaveCommand { get; }
         public ICommand DeleteCommand { get; }
+        public ICommand AddPhoneNumberCommand { get; }
+        public ICommand RemovePhoneNumberCommand { get; }
         private IFriendRepository _repository;
         private FriendWrapper _friend;
         private IEventAggregator _eventAggregator;
         private bool _hasChanges;
         private IMessageDialogService _dialogService;
         private IProgrammingLanguageLookupDataService _programmingLanguagesLookupService;
+        private FriendPhoneNumberWrapper _selectedPhoneNumber;
 
+        public FriendPhoneNumberWrapper SelectedNumber
+        {
+            get { return _selectedPhoneNumber; }
+            set
+            {
+                _selectedPhoneNumber = value;
+                OnPropertyChanged();
+                ((DelegateCommand)RemovePhoneNumberCommand).RaiseCanExecuteChanged();
+            }
+        }
         public FriendWrapper Friend
         {
             get { return _friend; }
@@ -54,11 +72,41 @@ namespace FriendOrganizer.UI.ViewModel
 
             DeleteCommand = new DelegateCommand(OnDeleteExecute);
 
+            AddPhoneNumberCommand = new DelegateCommand(OnAddPhoneNumberExecute);
+            RemovePhoneNumberCommand = new DelegateCommand(OnRemovePhoneNumberExecute, OnRemovePhoneNumberCanExecute);
+
             //Właściwość do przechowania lookup itemów w liście
             ProgrammingLanguages = new ObservableCollection<LookupItem>();
+            PhoneNumbers = new ObservableCollection<FriendPhoneNumberWrapper>();
+        }
+
+        private bool OnRemovePhoneNumberCanExecute()
+        {
+            return SelectedNumber != null;
+        }
+
+        private void OnRemovePhoneNumberExecute()
+        {
+            SelectedNumber.PropertyChanged -= FriendPhoneNumberWrapper_PropertyChanged;
+            _repository.RemovePhoneNumber(SelectedNumber.Model);
+            PhoneNumbers.Remove(SelectedNumber);
+            SelectedNumber = null;
+            HasChanges = _repository.HasChanges();
+            ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
+        }
+
+        private void OnAddPhoneNumberExecute()
+        {
+            var newNumber = new FriendPhoneNumberWrapper(new FriendPhoneNumber());
+            newNumber.PropertyChanged += FriendPhoneNumberWrapper_PropertyChanged;
+            PhoneNumbers.Add(newNumber);
+            Friend.Model.PhoneNumbers.Add(newNumber.Model);
+            newNumber.Number = "";
         }
 
         public ObservableCollection<LookupItem> ProgrammingLanguages { get; }
+
+        public ObservableCollection<FriendPhoneNumberWrapper> PhoneNumbers { get; }
 
         private async void OnDeleteExecute()
         {
@@ -77,7 +125,39 @@ namespace FriendOrganizer.UI.ViewModel
 
             InitFriend(friend);
 
+            InitializeFriendPhoneNumbers(friend.PhoneNumbers);
+
             await LoadProgrammingLanguagesAsync();
+        }
+
+        private void InitializeFriendPhoneNumbers(ICollection<FriendPhoneNumber> friendPhoneNumbers)
+        {
+            foreach (var number in PhoneNumbers)
+            {
+                number.PropertyChanged -= FriendPhoneNumberWrapper_PropertyChanged;
+            }
+
+            PhoneNumbers.Clear();
+
+            foreach (var number in friendPhoneNumbers)
+            {
+                var wrapper = new FriendPhoneNumberWrapper(number);
+                PhoneNumbers.Add(wrapper);
+                wrapper.PropertyChanged += FriendPhoneNumberWrapper_PropertyChanged;
+            }
+        }
+
+        private void FriendPhoneNumberWrapper_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (!HasChanges)
+            {
+                HasChanges = _repository.HasChanges();
+            }
+
+            if (e.PropertyName == nameof(FriendPhoneNumberWrapper.HasErrors))
+            {
+                ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
+            }
         }
 
         private void InitFriend(Friend friend)
@@ -142,7 +222,7 @@ namespace FriendOrganizer.UI.ViewModel
         /// <returns></returns>
         private bool OnSaveCanExecute()
         {            
-            return Friend != null && !Friend.HasErrors && HasChanges;
+            return Friend != null && !Friend.HasErrors && HasChanges && PhoneNumbers.All(pn => !pn.HasErrors);
         }
 
         private async void OnSaveExecute()
