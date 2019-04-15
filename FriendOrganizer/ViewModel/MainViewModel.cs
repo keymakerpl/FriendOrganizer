@@ -18,6 +18,8 @@ namespace FriendOrganizer.UI.ViewModel
         public ICommand CreateNewDetailCommand { get; }
 
         private IDetailViewModel _detailViewModel;
+        private Func<IMeetingDetailViewModel> _meetingDetailViewModelCreator;
+
         public IDetailViewModel DetailViewModel
         {
             get => _detailViewModel;
@@ -30,13 +32,16 @@ namespace FriendOrganizer.UI.ViewModel
         /// <param name="navigationViewModel"></param>
         /// <param name="friendDetailViewModelCreator"></param>
         /// <param name="eventAggregator"></param>
-        public MainViewModel(INavigationViewModel navigationViewModel, Func<IFriendDetailViewModel> friendDetailViewModelCreator,
+        public MainViewModel(INavigationViewModel navigationViewModel,
+            Func<IFriendDetailViewModel> friendDetailViewModelCreator,
+            Func<IMeetingDetailViewModel> meetingDetailViewModelCreator,
             IEventAggregator eventAggregator,
             IMessageDialogService messageService)
         {
             _eventAggregator = eventAggregator;
             _friendDetailViewModelCreator = friendDetailViewModelCreator;
             _messageDialogService = messageService;
+            _meetingDetailViewModelCreator = meetingDetailViewModelCreator;
 
             _eventAggregator.GetEvent<OpenDetailViewEvent>()
                 .Subscribe(OnOpenDetailView);
@@ -79,6 +84,13 @@ namespace FriendOrganizer.UI.ViewModel
                 case nameof(FriendDetailViewModel):
                     DetailViewModel = _friendDetailViewModelCreator();
                     break;
+
+                case nameof(MeetingDetailViewModel):
+                    DetailViewModel = _meetingDetailViewModelCreator();
+                    break;
+
+                default:
+                    throw new Exception($"ViewModel {args.ViewModelName} not exists");
             }
 
             await DetailViewModel.LoadAsync(args.Id);

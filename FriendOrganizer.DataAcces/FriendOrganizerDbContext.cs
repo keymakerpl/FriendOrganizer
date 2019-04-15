@@ -28,6 +28,8 @@ namespace FriendOrganizer.DataAcces
         /// </summary>
         public DbSet<FriendPhoneNumber> FriendPhoneNumbers { get; set; }
 
+        public DbSet<Meeting> Meetings { get; set; }
+
         /// <summary>
         /// Tutaj ustawiamy jak ma być tworzona baza
         /// </summary>

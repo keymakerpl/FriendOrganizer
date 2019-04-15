@@ -14,6 +14,7 @@ namespace FriendOrganizer.Model
         private void Init()
         {
             PhoneNumbers = new Collection<FriendPhoneNumber>();
+            Meetings = new Collection<Meeting>();
         }
 
         public int Id { get; set; }
@@ -33,10 +34,18 @@ namespace FriendOrganizer.Model
         /// Wybrany ulubiony język, zbindowane w widoku z lookup itemem
         /// </summary>
         public int? FavoriteLanguageId { get; set; }
-        
+
+        #region Relacje
+
+        //Ulubiony język
         public ProgrammingLanguage FavoriteLanguage { get; set; }
 
-        //kolekcja - numery telefonów
+        //Numery telefonów
         public ICollection<FriendPhoneNumber> PhoneNumbers { get; set; }
+
+        //Spotkania
+        public ICollection<Meeting> Meetings { get; set; }
+
+        #endregion
     }
 }
