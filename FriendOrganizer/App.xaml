@@ -6,6 +6,9 @@
              DispatcherUnhandledException="App_OnDispatcherUnhandledException">
     <Application.Resources>
 
+        <!-->Konwerter booli na enum visibility w xaml</-->
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
         <!-- Zadefiniowane style dla pól tekstowych</-->
         <Style TargetType="TextBox">
              <Setter Property="Validation.ErrorTemplate">

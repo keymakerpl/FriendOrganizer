@@ -12,7 +12,14 @@ namespace FriendOrganizer.UI.Wrapper
 
         public int Id
         {
-            get { return Model.Id; }
+            get
+            {
+                return Model.Id;
+            }
+            set
+            {
+                SetValue(value);
+            }
         }
 
         public string Name

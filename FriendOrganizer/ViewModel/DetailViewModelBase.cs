@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using System.Windows.Input;
 using FriendOrganizer.Event;
+using FriendOrganizer.View.UI.Services;
 using Prism.Commands;
 using Prism.Events;
 
@@ -10,18 +11,45 @@ namespace FriendOrganizer.UI.ViewModel
     {
         private bool _hasChanges;
         protected readonly IEventAggregator EventAggregator;
+        protected readonly IMessageDialogService MessageDialogService;
+        private int _id;
+        private string _title;
 
-        public DetailViewModelBase(IEventAggregator eventAggregator)
+        public DetailViewModelBase(IEventAggregator eventAggregator, IMessageDialogService messageDialogService)
         {
             EventAggregator = eventAggregator;
+            MessageDialogService = messageDialogService;
             SaveCommand = new DelegateCommand(OnSaveExecute, OnSaveCanExecute);
             DeleteCommand = new DelegateCommand(OnDeleteExecute);
+            CloseDetailViewCommand = new DelegateCommand(OnCloseDetailViewExecute);
         }
-        public abstract Task LoadAsync(int? id);
+
+        protected virtual void OnCloseDetailViewExecute()
+        {
+            if (HasChanges)
+            {
+                var result = MessageDialogService.ShowOkCancelDialog("Continue and Cancel changes?", Title);
+
+                if (result == MessageDialogRessult.Cancel)
+                {
+                    return;
+                }
+            }
+
+            EventAggregator.GetEvent<AfterDetailClosedEvent>().Publish(new AfterDetailClosedEventArgs()
+            {
+                Id = this.Id,
+                ViewModelName = this.GetType().Name
+            });
+        }
+
+        public abstract Task LoadAsync(int id);
 
         public ICommand SaveCommand { get; private set; }
 
         public ICommand DeleteCommand { get; private set; }
+
+        public ICommand CloseDetailViewCommand { get; set; }
 
         protected abstract void OnSaveExecute();
 
@@ -43,6 +71,22 @@ namespace FriendOrganizer.UI.ViewModel
                     OnPropertyChanged();
                     ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
                 }
+            }
+        }
+
+        public int Id
+        {
+            get { return _id; }
+            protected set { _id = value; }
+        }
+
+        public string Title
+        {
+            get { return _title; }
+            protected set
+            {
+                _title = value;
+                OnPropertyChanged();
             }
         }
 

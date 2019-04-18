@@ -11,7 +11,8 @@
         FontSize="20"
         WindowStartupLocation="CenterScreen"
         >
-    <!-->ContentControl zepnie widok z modelem</!-->
+
+    <!-->Tab ContentControl zepnie widok z modelem</!-->
     <Window.Resources>
         <DataTemplate DataType="{x:Type viewModel:FriendDetailViewModel}">
             <view:FriendDetailView/>
@@ -43,7 +44,25 @@
         </Menu>
         <view:NavigationView Grid.Row="1" Grid.Column="0" DataContext="{Binding NavigationViewModel}"/>
         
-        <!-->ContentControl<!-->
-        <ContentControl Grid.Row="1" Grid.Column="1" Content="{Binding DetailViewModel}"/>
+        <!-->Tab ContentControl<!-->
+        <TabControl Grid.Row="1" Grid.Column="1" 
+                    ItemsSource="{Binding DetailViewModels}"
+                    SelectedItem="{Binding SelectedDetailViewModel, Mode=TwoWay}"
+                    BorderThickness="2"
+                    Margin="5">
+            <!-->Definicja jak ma wyglądać</-->
+            <TabControl.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Title}"/>
+                        <TextBlock Text="*" Visibility="{Binding HasChanges, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        <Button Command="{Binding CloseDetailViewCommand}"
+                                VerticalContentAlignment="Top" Margin="2"
+                                Content="x" FontSize="20"/>
+                    </StackPanel>
+                </DataTemplate>
+            </TabControl.ItemTemplate>
+        </TabControl>
+
     </Grid>
 </Window>

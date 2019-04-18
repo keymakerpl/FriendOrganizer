@@ -23,7 +23,6 @@ namespace FriendOrganizer.UI.ViewModel
         public ICommand RemovePhoneNumberCommand { get; }
 
         private IFriendRepository _repository;
-        private IMessageDialogService _dialogService;
         private IProgrammingLanguageLookupDataService _programmingLanguagesLookupService;
 
         private FriendPhoneNumberWrapper _selectedPhoneNumber;
@@ -57,10 +56,9 @@ namespace FriendOrganizer.UI.ViewModel
         public FriendDetailViewModel(IFriendRepository repository,
             IEventAggregator eventAggregator,
             IMessageDialogService dialogService,
-            IProgrammingLanguageLookupDataService programmingLanguageLookupDataService) : base(eventAggregator)
+            IProgrammingLanguageLookupDataService programmingLanguageLookupDataService) : base(eventAggregator, dialogService)
         {
             _repository = repository;
-            _dialogService = dialogService;
             _programmingLanguagesLookupService = programmingLanguageLookupDataService;            
 
             AddPhoneNumberCommand = new DelegateCommand(OnAddPhoneNumberExecute);
@@ -71,11 +69,14 @@ namespace FriendOrganizer.UI.ViewModel
             PhoneNumbers = new ObservableCollection<FriendPhoneNumberWrapper>();
         }
 
-        public override async Task LoadAsync(int? friendId)
-        {
-            //Pobiera model z repo
-            var friend = friendId.HasValue ?
-                await _repository.GetByIdAsync(friendId.Value) : CreateNewFriend();
+        public override async Task LoadAsync(int friendId)
+        {            
+            //Pobiera model z repo lub utwórz nowego
+            var friend = friendId > 0 ?
+                await _repository.GetByIdAsync(friendId) : CreateNewFriend();
+
+            //ustaw Id dla detailviewmodel, taki sam jak pobranego modelu z repo
+            Id = friendId;
 
             InitFriend(friend);
 
@@ -107,11 +108,23 @@ namespace FriendOrganizer.UI.ViewModel
                 {
                     ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
                 }
+
+                if (args.PropertyName == nameof(Friend.FirstName) || args.PropertyName == nameof(Friend.LastName))
+                {
+                    SetTitle();
+                }
             });
             ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
 
             if (Friend.Id == 0)
                 Friend.FirstName = ""; // takie se, trzeba tacznąć propertisa aby zadziałała walidacja nowego detalu
+
+            SetTitle();
+        }
+
+        private void SetTitle()
+        {
+            Title = $"{Friend.FirstName} {Friend.LastName}";
         }
 
         private void InitializeFriendPhoneNumbers(ICollection<FriendPhoneNumber> friendPhoneNumbers)
@@ -169,7 +182,9 @@ namespace FriendOrganizer.UI.ViewModel
         {
             await _repository.SaveAsync();
             HasChanges = _repository.HasChanges(); // Po zapisie ustawiamy flagę na false jeśli nie ma zmian w repo
-            
+
+            Id = Friend.Id; //odśwież Id friend wrappera
+
             //Powiadom agregator eventów, że zapisano
             RaiseDetailSavedEvent(Friend.Id, $"{Friend.FirstName} {Friend.LastName}");            
         }
@@ -178,11 +193,11 @@ namespace FriendOrganizer.UI.ViewModel
         {
             if (await _repository.HasMeetingsAsync(Friend.Id))
             {
-                _dialogService.ShowInfoDialog($"Cannot delete {Friend.FirstName} {Friend.LastName} because being in meeting");
+                MessageDialogService.ShowInfoDialog($"Cannot delete {Friend.FirstName} {Friend.LastName} because being in meeting");
                 return;
             }
 
-            var result = _dialogService.ShowOkCancelDialog("Delete?", "Confirm");
+            var result = MessageDialogService.ShowOkCancelDialog("Delete?", "Confirm");
             if (result == MessageDialogRessult.Cancel) return;
 
             _repository.Remove(Friend.Model);

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using FriendOrganizer.Data.Repositories;
+using FriendOrganizer.Event;
 using FriendOrganizer.Model;
 using FriendOrganizer.View.UI.Services;
 using FriendOrganizer.UI.Wrapper;
@@ -14,7 +15,6 @@ namespace FriendOrganizer.UI.ViewModel
 {
     public class MeetingDetailViewModel : DetailViewModelBase, IMeetingDetailViewModel
     {
-        private IMessageDialogService _dialogService;
         private IMeetingRepository _repository;
         private MeetingWrapper _meeting;
         private Friend _selectedAvailableFriend;
@@ -23,16 +23,27 @@ namespace FriendOrganizer.UI.ViewModel
 
         public MeetingDetailViewModel(IEventAggregator eventAggregator,
             IMessageDialogService dialogService,
-            IMeetingRepository meetingRepository) : base(eventAggregator)
+            IMeetingRepository meetingRepository) : base(eventAggregator, dialogService)
         {
-            _dialogService = dialogService;
             _repository = meetingRepository;
+
+            eventAggregator.GetEvent<AfterDetailSavedEvent>().Subscribe(AfterDetailSaved);
 
             AddedFriends = new ObservableCollection<Friend>();
             AvailableFriends = new ObservableCollection<Friend>();
             
             AddFriendCommand = new DelegateCommand(OnAddFriendExecute, OnAddFriendCanExecute);
             RemoveFriendCommand = new DelegateCommand(OnRemoveFriendExecute, OnRemoveFriendCanExecute);
+        }
+
+        private async void AfterDetailSaved(AfterDetailSavedEventArgs args)
+        {
+            if (args.ViewModelName == nameof(FriendDetailViewModel))
+            {
+                await _repository.ReloadFriendsAsync(args.Id);
+                _allFriends = await _repository.GetAllFriendsAsync();
+                SetUpFriendsPickList();
+            }
         }
 
         private bool OnAddFriendCanExecute()
@@ -111,13 +122,16 @@ namespace FriendOrganizer.UI.ViewModel
             }
         }
 
-        public override async Task LoadAsync(int? id)
+        public override async Task LoadAsync(int meetingId)
         {
-            var meeting = id.HasValue ? await _repository.GetByIdAsync(id.Value) : CreateNewMeeting();
+            //jeśli nie ma twórz nowy
+            var meeting = meetingId > 0 ? await _repository.GetByIdAsync(meetingId) : CreateNewMeeting();
+            Id = meetingId; //ustaw dla modelu detala
 
             InitMeeting(meeting);
             _allFriends = await _repository.GetAllFriendsAsync();
-            SetUpFriendsPickList();
+
+            SetUpFriendsPickList(); //ustaw listę friendsów do dodania
         }
 
         private void SetUpFriendsPickList()
@@ -155,9 +169,20 @@ namespace FriendOrganizer.UI.ViewModel
                 }
 
                 ((DelegateCommand) SaveCommand).RaiseCanExecuteChanged();
+                if (args.PropertyName == nameof(Meeting.Name))
+                {
+                    SetTitle();
+                }
             };
 
             if (Meeting.Id == 0) Meeting.Name = "";
+
+            SetTitle();
+        }
+
+        private void SetTitle()
+        {
+            Title = $"{Meeting.Name}";
         }
 
         private Meeting CreateNewMeeting()
@@ -173,6 +198,8 @@ namespace FriendOrganizer.UI.ViewModel
             await _repository.SaveAsync();
             HasChanges = _repository.HasChanges(); // Po zapisie ustawiamy flagę na false bo nie ma już zmian w repo
 
+            Meeting.Id = Id; //odśwież meetingId
+
             //Powiadom agregator eventów, że zapisano
             RaiseDetailSavedEvent(Meeting.Id, Meeting.Name);
         }
@@ -184,7 +211,7 @@ namespace FriendOrganizer.UI.ViewModel
 
         protected override void OnDeleteExecute()
         {
-            var result = _dialogService.ShowOkCancelDialog("Delete?", "Confirm");
+            var result = MessageDialogService.ShowOkCancelDialog("Delete?", "Confirm");
             if (result == MessageDialogRessult.Cancel) return;
 
             _repository.Remove(Meeting.Model);

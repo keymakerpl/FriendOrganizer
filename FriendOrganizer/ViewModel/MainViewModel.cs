@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Autofac.Features.Indexed;
@@ -16,14 +18,19 @@ namespace FriendOrganizer.UI.ViewModel
         private IMessageDialogService _messageDialogService;
         private IIndex<string, IDetailViewModel> _detailViewModelCreator;
 
+        public ObservableCollection<IDetailViewModel> DetailViewModels { get; }
         public INavigationViewModel NavigationViewModel { get; }
         public ICommand CreateNewDetailCommand { get; }
 
-        private IDetailViewModel _detailViewModel;
-        public IDetailViewModel DetailViewModel
+        private IDetailViewModel _selectedDetailViewModel;
+        public IDetailViewModel SelectedDetailViewModel
         {
-            get => _detailViewModel;
-            private set { _detailViewModel = value; OnPropertyChanged();}
+            get => _selectedDetailViewModel;
+            set
+            {
+                _selectedDetailViewModel = value;
+                OnPropertyChanged();
+            }
         }
 
         /// <summary>
@@ -37,7 +44,9 @@ namespace FriendOrganizer.UI.ViewModel
             IEventAggregator eventAggregator,
             IMessageDialogService messageService)
         {
+            DetailViewModels = new ObservableCollection<IDetailViewModel>(); //for tabbed ui
             NavigationViewModel = navigationViewModel;
+
             _detailViewModelCreator = detailViewModelCreator;
             _eventAggregator = eventAggregator;            
             _messageDialogService = messageService;            
@@ -48,8 +57,27 @@ namespace FriendOrganizer.UI.ViewModel
             _eventAggregator.GetEvent<AfterDetailDeletedEvent>()
                 .Subscribe(AfterDetailDeleted);
 
+            _eventAggregator.GetEvent<AfterDetailClosedEvent>()
+                .Subscribe(AfterDetailClosed);
+
             CreateNewDetailCommand = new DelegateCommand<Type>(OnCreateNewDetailExecute);
-        }        
+        }
+
+        private void AfterDetailClosed(AfterDetailClosedEventArgs args)
+        {
+            RemoveDetailViewModel(args.Id, args.ViewModelName);
+        }
+
+        private void RemoveDetailViewModel(int id, string viewModelName)
+        {
+            var detailViewModel = DetailViewModels.SingleOrDefault(vm => vm.Id == id
+                                                                         && vm.GetType().Name == viewModelName);
+
+            if (detailViewModel != null)
+            {
+                DetailViewModels.Remove(detailViewModel);
+            }
+        }
 
         public void Load()
         {
@@ -61,44 +89,32 @@ namespace FriendOrganizer.UI.ViewModel
             await NavigationViewModel.LoadAsync();
         }
 
+        private int newNextId = 0;
         private void OnCreateNewDetailExecute(Type viewModelType)
         {
             //Korzystamy z tej samej metody lecz bez id w parametrze
-            OnOpenDetailView(new OpenDetailViewEventArgs() { ViewModelName = viewModelType.Name });
+            OnOpenDetailView(new OpenDetailViewEventArgs() { Id = newNextId, ViewModelName = viewModelType.Name });
         }
 
         private async void OnOpenDetailView(OpenDetailViewEventArgs args)
         {
-            if (DetailViewModel != null && DetailViewModel.HasChanges)
+            var detailViewModel = DetailViewModels.SingleOrDefault(vm => vm.Id == args.Id
+                                                                         && vm.GetType().Name == args.ViewModelName);
+
+            if (detailViewModel == null)
             {
-                var result = _messageDialogService.ShowOkCancelDialog("You made changes. Continue?", "Has been changed");
-                if (result == MessageDialogRessult.Cancel) return;
+                //Pobieramy teraz odpowiedni model po kluczu. Autofac to ogarnie.
+                detailViewModel = _detailViewModelCreator[args.ViewModelName];
+                await detailViewModel.LoadAsync(args.Id);
+                DetailViewModels.Add(detailViewModel);
             }
 
-            //ustawiamy odpowieni model
-            //switch (args.ViewModelName)
-            //{
-            //    case nameof(FriendDetailViewModel):
-            //        DetailViewModel = _friendDetailViewModelCreator();
-            //        break;
-
-            //    case nameof(MeetingDetailViewModel):
-            //        DetailViewModel = _meetingDetailViewModelCreator();
-            //        break;
-
-            //    default:
-            //        throw new Exception($"ViewModel {args.ViewModelName} not exists");
-            //}
-
-            //Pobieramy teraz odpowiedni model po kluczu. Autofac to ogarnie.
-            DetailViewModel = _detailViewModelCreator[args.ViewModelName];
-
-            await DetailViewModel.LoadAsync(args.Id);
+            SelectedDetailViewModel = detailViewModel;
         }
 
         private void AfterDetailDeleted(AfterDetailDeletedEventArgs args)
         {
-            DetailViewModel = null;
+            RemoveDetailViewModel(args.Id, args.ViewModelName);
         }
 
         
