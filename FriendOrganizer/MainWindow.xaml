@@ -20,6 +20,7 @@
             <view:MeetingDetailView/>
         </DataTemplate>
     </Window.Resources>
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -29,14 +30,19 @@
             <ColumnDefinition Width="200"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
+        
         <Menu Grid.Row="0" Grid.ColumnSpan="2" FontSize="20">
             <MenuItem Header="Create">
                 <MenuItem Header="New Friend" 
                           Command="{Binding CreateNewDetailCommand}"
                           CommandParameter="{x:Type viewModel:FriendDetailViewModel}"/>
+                <MenuItem Header="New Meeting" 
+                          Command="{Binding CreateNewDetailCommand}"
+                          CommandParameter="{x:Type viewModel:MeetingDetailViewModel}"/>
             </MenuItem>
         </Menu>
         <view:NavigationView Grid.Row="1" Grid.Column="0" DataContext="{Binding NavigationViewModel}"/>
+        
         <!-->ContentControl<!-->
         <ContentControl Grid.Row="1" Grid.Column="1" Content="{Binding DetailViewModel}"/>
     </Grid>

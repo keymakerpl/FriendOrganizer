@@ -45,7 +45,9 @@
             <RowDefinition/>
         </Grid.RowDefinitions>
 
-        <GroupBox Name="Friends">
+        <GroupBox Header="Friends" 
+                  BorderThickness="2" 
+                  Margin="5 5">
             <ScrollViewer VerticalScrollBarVisibility="Auto"
                           HorizontalScrollBarVisibility="Auto">
                 <ItemsControl ItemsSource="{Binding Friends}"
@@ -53,7 +55,10 @@
                               ItemTemplate="{StaticResource DataTemplate}"/>
             </ScrollViewer>
         </GroupBox>
-        <GroupBox Grid.Row="1" Name="Meetings">
+        <GroupBox Grid.Row="1" 
+                  Header="Meetings"
+                  BorderThickness="1"
+                  Margin="5 5">
             <ScrollViewer VerticalScrollBarVisibility="Auto"
                           HorizontalScrollBarVisibility="Auto">
                 <ItemsControl ItemsSource="{Binding Meetings}"

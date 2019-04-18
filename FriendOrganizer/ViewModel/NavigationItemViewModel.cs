@@ -9,7 +9,7 @@ using FriendOrganizer.UI.ViewModel;
 using Prism.Commands;
 using Prism.Events;
 
-namespace FriendOrganizer.ViewModel
+namespace FriendOrganizer.UI.ViewModel
 {
     public class NavigationItemViewModel : ViewModelBase
     {

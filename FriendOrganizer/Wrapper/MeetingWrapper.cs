@@ -1,8 +1,7 @@
 ﻿using System;
 using FriendOrganizer.Model;
-using FriendOrganizer.UI.Wrapper;
 
-namespace FriendOrganizer.Wrapper
+namespace FriendOrganizer.UI.Wrapper
 {
     public class MeetingWrapper : ModelWrapper<Meeting>
     {
@@ -28,13 +27,27 @@ namespace FriendOrganizer.Wrapper
         public DateTime DateFrom
         {
             get { return GetValue<DateTime>(); }
-            set { SetValue(value);}
+            set
+            {
+                SetValue(value);
+                if (DateTo < DateFrom)
+                {
+                    DateTo = DateFrom;
+                }
+            }
         }
 
         public DateTime DateTo
         {
             get { return GetValue<DateTime>(); }
-            set { SetValue(value); }
+            set
+            {
+                SetValue(value);
+                if (DateTo < DateFrom)
+                {
+                    DateFrom = DateTo;
+                }
+            }
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Autofac.Features.Indexed;
 using FriendOrganizer.Event;
 using FriendOrganizer.UI.Event;
 using Prism.Events;
@@ -10,16 +11,15 @@ using Prism.Commands;
 namespace FriendOrganizer.UI.ViewModel
 {
     public class MainViewModel : ViewModelBase
-    {
-        public INavigationViewModel NavigationViewModel { get; }
-        private Func<IFriendDetailViewModel> _friendDetailViewModelCreator { get; }
+    {       
         private IEventAggregator _eventAggregator;
         private IMessageDialogService _messageDialogService;
+        private IIndex<string, IDetailViewModel> _detailViewModelCreator;
+
+        public INavigationViewModel NavigationViewModel { get; }
         public ICommand CreateNewDetailCommand { get; }
 
         private IDetailViewModel _detailViewModel;
-        private Func<IMeetingDetailViewModel> _meetingDetailViewModelCreator;
-
         public IDetailViewModel DetailViewModel
         {
             get => _detailViewModel;
@@ -33,15 +33,14 @@ namespace FriendOrganizer.UI.ViewModel
         /// <param name="friendDetailViewModelCreator"></param>
         /// <param name="eventAggregator"></param>
         public MainViewModel(INavigationViewModel navigationViewModel,
-            Func<IFriendDetailViewModel> friendDetailViewModelCreator,
-            Func<IMeetingDetailViewModel> meetingDetailViewModelCreator,
+            IIndex<string, IDetailViewModel> detailViewModelCreator,
             IEventAggregator eventAggregator,
             IMessageDialogService messageService)
         {
-            _eventAggregator = eventAggregator;
-            _friendDetailViewModelCreator = friendDetailViewModelCreator;
-            _messageDialogService = messageService;
-            _meetingDetailViewModelCreator = meetingDetailViewModelCreator;
+            NavigationViewModel = navigationViewModel;
+            _detailViewModelCreator = detailViewModelCreator;
+            _eventAggregator = eventAggregator;            
+            _messageDialogService = messageService;            
 
             _eventAggregator.GetEvent<OpenDetailViewEvent>()
                 .Subscribe(OnOpenDetailView);
@@ -50,8 +49,6 @@ namespace FriendOrganizer.UI.ViewModel
                 .Subscribe(AfterDetailDeleted);
 
             CreateNewDetailCommand = new DelegateCommand<Type>(OnCreateNewDetailExecute);
-
-            NavigationViewModel = navigationViewModel;
         }        
 
         public void Load()
@@ -79,19 +76,22 @@ namespace FriendOrganizer.UI.ViewModel
             }
 
             //ustawiamy odpowieni model
-            switch (args.ViewModelName)
-            {
-                case nameof(FriendDetailViewModel):
-                    DetailViewModel = _friendDetailViewModelCreator();
-                    break;
+            //switch (args.ViewModelName)
+            //{
+            //    case nameof(FriendDetailViewModel):
+            //        DetailViewModel = _friendDetailViewModelCreator();
+            //        break;
 
-                case nameof(MeetingDetailViewModel):
-                    DetailViewModel = _meetingDetailViewModelCreator();
-                    break;
+            //    case nameof(MeetingDetailViewModel):
+            //        DetailViewModel = _meetingDetailViewModelCreator();
+            //        break;
 
-                default:
-                    throw new Exception($"ViewModel {args.ViewModelName} not exists");
-            }
+            //    default:
+            //        throw new Exception($"ViewModel {args.ViewModelName} not exists");
+            //}
+
+            //Pobieramy teraz odpowiedni model po kluczu. Autofac to ogarnie.
+            DetailViewModel = _detailViewModelCreator[args.ViewModelName];
 
             await DetailViewModel.LoadAsync(args.Id);
         }

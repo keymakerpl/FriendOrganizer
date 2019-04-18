@@ -29,8 +29,12 @@ namespace FriendOrganizer.UI.Startup
             builder.RegisterType<MainWindow>().AsSelf();
             builder.RegisterType<MainViewModel>().AsSelf();
             builder.RegisterType<NavigationViewModel>().As<INavigationViewModel>();
-            builder.RegisterType<FriendDetailViewModel>().As<IFriendDetailViewModel>();
-            builder.RegisterType<MeetingDetailViewModel>().As<IMeetingDetailViewModel>();
+
+            //Autofac wrzuci odpowiedni model do konstruktora mainviewmodel po kluczu
+            builder.RegisterType<FriendDetailViewModel>()
+                .Keyed<IDetailViewModel>(nameof(FriendDetailViewModel));
+            builder.RegisterType<MeetingDetailViewModel>()
+                .Keyed<IDetailViewModel>(nameof(MeetingDetailViewModel));
 
             //Serwisy
             builder.RegisterType<MessageDialogService>().As<IMessageDialogService>(); //MessageBox service

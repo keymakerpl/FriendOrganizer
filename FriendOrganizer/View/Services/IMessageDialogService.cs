@@ -3,5 +3,6 @@
     public interface IMessageDialogService
     {
         MessageDialogRessult ShowOkCancelDialog(string text, string title);
+        void ShowInfoDialog(string text);
     }
 }

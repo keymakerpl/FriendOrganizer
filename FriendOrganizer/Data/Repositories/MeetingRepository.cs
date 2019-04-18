@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Data.Entity;
 using FriendOrganizer.DataAcces;
 using FriendOrganizer.Model;
@@ -16,6 +17,11 @@ namespace FriendOrganizer.Data.Repositories
         public async override Task<Meeting> GetByIdAsync(int id)
         {
             return await Context.Meetings.Include(m => m.Friends).SingleAsync(m => m.Id == id);
+        }
+
+        public async Task<List<Friend>> GetAllFriendsAsync()
+        {
+            return await Context.Set<Friend>().ToListAsync();
         }
     }
 }

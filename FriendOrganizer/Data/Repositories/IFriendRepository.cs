@@ -12,5 +12,6 @@ namespace FriendOrganizer.UI.Data.Repositories
         IEnumerable<Friend> GetAll();
         Task<List<Friend>> GetAllAsync();
         void RemovePhoneNumber(FriendPhoneNumber selectedNumberModel);
+        Task<bool> HasMeetingsAsync(int friendId);
     }
 }

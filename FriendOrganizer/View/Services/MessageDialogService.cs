@@ -16,7 +16,12 @@ namespace FriendOrganizer.View.UI.Services
                 ? MessageDialogRessult.OK
                 : MessageDialogRessult.Cancel;
         }
-    }
+
+        public void ShowInfoDialog(string text)
+        {
+            MessageBox.Show(text, "Info");
+        }
+    }    
 
     public enum MessageDialogRessult
     {

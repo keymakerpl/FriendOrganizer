@@ -5,6 +5,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:FriendOrganizer.UI.View"
       xmlns:toolkit="http://schemas.xceed.com/wpf/xaml/toolkit"
+      xmlns:model="clr-namespace:FriendOrganizer.Model;assembly=FriendOrganizer.Model"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       >
@@ -23,21 +24,67 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         
-        <Label Grid.Row="0" Content="Title" Margin="10 0"/>
-        <TextBox Grid.Row="1" Text="{Binding Meeting.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+        <Label Grid.Row="0" Content="Title" Margin="10 10 10 0"/>
+        <TextBox Grid.Row="1"
+                 Margin="10 0"
+                 Text="{Binding Meeting.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
         <Label Grid.Row="2" Content="Date from:" Margin="10 0"/>
-        <toolkit:DateTimePicker Grid.Row="3" Value="{Binding Meeting.DateFrom, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+        <toolkit:DateTimePicker Grid.Row="3"
+                                Margin="10 0"
+                                Value="{Binding Meeting.DateFrom, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
-        <Label Grid.Row="4" Content="Date from:" Margin="10 0"/>
-        <toolkit:DateTimePicker Grid.Row="5" Value="{Binding Meeting.DateTo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+        <Label Grid.Row="4" Content="Date to:" Margin="10 0"/>
+        <toolkit:DateTimePicker Grid.Row="5"
+                                Margin="10 0"
+                                Value="{Binding Meeting.DateTo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+        
+        <Grid Row="8" Margin="10">
 
-        <StackPanel Grid.Row="7
-                    " Orientation="Horizontal" Height="55">
+            <Grid.Resources>
+                <DataTemplate DataType="{x:Type model:Friend}">
+                    <TextBlock>
+                        <Run Text="{Binding FirstName}"/> 
+                        <Run Text="{Binding LastName}"/>
+                    </TextBlock>
+                </DataTemplate>
+            </Grid.Resources>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <Label Content="Added Friends"/>
+            <ListView Grid.Row="1"
+                      ItemsSource="{Binding AddedFriends}"
+                      SelectedItem="{Binding SelectedAddedFriend}"/>
+
+            <StackPanel Grid.Row="1" Grid.Column="1">
+                <Button Content="&lt;&lt;" Margin="10" Command="{Binding AddFriendCommand}"/>
+                <Button Content="&gt;&gt;" Margin="10 0 10 10" Command="{Binding RemoveFriendCommand}"/>
+            </StackPanel>
+
+            <Label Content="Available Friends" Grid.Column="2"/>
+            <ListView Grid.Row="1"
+                      Grid.Column="2"
+                      ItemsSource="{Binding AvailableFriends}"
+                      SelectedItem="{Binding SelectedAvailableFriend}"/>
+
+        </Grid>
+
+        <StackPanel Grid.Row="9" Orientation="Horizontal" Height="55">
             <Button Content="Save" Width="125" Height="35" Margin="10"
                     Command="{Binding SaveCommand}"/>
             <Button Content="Delete" Width="125" Height="35" Margin="10"
                     Command="{Binding DeleteCommand}"/>
         </StackPanel>
+
     </Grid>
 </UserControl>
