@@ -7,13 +7,21 @@
         xmlns:view="clr-namespace:FriendOrganizer.UI.View"
         xmlns:viewModel="clr-namespace:FriendOrganizer.UI.ViewModel"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="800" FontSize="20">
-    <!-->ContentControl zepnie widok z modelem</!-->
+        Title="MainWindow" Height="700" Width="1000" 
+        FontSize="20"
+        WindowStartupLocation="CenterScreen"
+        >
+
+    <!-->Tab ContentControl zepnie widok z modelem</!-->
     <Window.Resources>
         <DataTemplate DataType="{x:Type viewModel:FriendDetailViewModel}">
             <view:FriendDetailView/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModel:MeetingDetailViewModel}">
+            <view:MeetingDetailView/>
+        </DataTemplate>
     </Window.Resources>
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -23,13 +31,38 @@
             <ColumnDefinition Width="200"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
+        
         <Menu Grid.Row="0" Grid.ColumnSpan="2" FontSize="20">
             <MenuItem Header="Create">
-                <MenuItem Header="New Friend" Command="{Binding CreateNewFriendCommand}"/>
+                <MenuItem Header="New Friend" 
+                          Command="{Binding CreateNewDetailCommand}"
+                          CommandParameter="{x:Type viewModel:FriendDetailViewModel}"/>
+                <MenuItem Header="New Meeting" 
+                          Command="{Binding CreateNewDetailCommand}"
+                          CommandParameter="{x:Type viewModel:MeetingDetailViewModel}"/>
             </MenuItem>
         </Menu>
         <view:NavigationView Grid.Row="1" Grid.Column="0" DataContext="{Binding NavigationViewModel}"/>
-        <!-->ContentControl<!-->
-        <ContentControl Grid.Row="1" Grid.Column="1" Content="{Binding FriendDetailViewModel}"/>
+        
+        <!-->Tab ContentControl<!-->
+        <TabControl Grid.Row="1" Grid.Column="1" 
+                    ItemsSource="{Binding DetailViewModels}"
+                    SelectedItem="{Binding SelectedDetailViewModel, Mode=TwoWay}"
+                    BorderThickness="2"
+                    Margin="5">
+            <!-->Definicja jak ma wyglądać</-->
+            <TabControl.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Title}"/>
+                        <TextBlock Text="*" Visibility="{Binding HasChanges, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        <Button Command="{Binding CloseDetailViewCommand}"
+                                VerticalContentAlignment="Top" Margin="2"
+                                Content="x" FontSize="20"/>
+                    </StackPanel>
+                </DataTemplate>
+            </TabControl.ItemTemplate>
+        </TabControl>
+
     </Grid>
 </Window>

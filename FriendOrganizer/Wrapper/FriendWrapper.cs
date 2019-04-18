@@ -40,6 +40,12 @@ namespace FriendOrganizer.UI.Wrapper
             set { SetValue(value); }
         }
 
+        public int? FavoriteLanguageId
+        {
+            get { return GetValue<int?>(); }
+            set { SetValue(value); }
+        }
+
         /// <summary>
         /// Walidacja specyficzna dla danego modelu.
         /// </summary>

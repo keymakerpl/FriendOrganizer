@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using FriendOrganizer.Data.Repositories;
 using FriendOrganizer.DataAcces;
 using FriendOrganizer.UI.Data.Lookups;
 using FriendOrganizer.UI.Data.Repositories;
@@ -11,7 +12,7 @@ namespace FriendOrganizer.UI.Startup
     public class Bootstrapper
     {
         /// <summary>
-        /// Kontener do wiązania widok-model widoku. Depency Injection
+        /// Kontener do inicjalizacji instancji. Depency Injection zamiast new
         /// </summary>
         /// <returns></returns>
         public IContainer Bootstrap()
@@ -24,20 +25,26 @@ namespace FriendOrganizer.UI.Startup
             //Baza danych DbContext, inicjalizacja, zarzadzanie itd.
             builder.RegisterType<FriendOrganizerDbContext>().AsSelf();
 
-            //ViewModel - View, tworzy instancje modeli i widoku
+            //ViewModel - View, tworzy instancje modeli dla widoku
             builder.RegisterType<MainWindow>().AsSelf();
             builder.RegisterType<MainViewModel>().AsSelf();
             builder.RegisterType<NavigationViewModel>().As<INavigationViewModel>();
-            builder.RegisterType<FriendDetailViewModel>().As<IFriendDetailViewModel>();
+
+            //Autofac wrzuci odpowiedni model do konstruktora mainviewmodel po kluczu
+            builder.RegisterType<FriendDetailViewModel>()
+                .Keyed<IDetailViewModel>(nameof(FriendDetailViewModel));
+            builder.RegisterType<MeetingDetailViewModel>()
+                .Keyed<IDetailViewModel>(nameof(MeetingDetailViewModel));
 
             //Serwisy
             builder.RegisterType<MessageDialogService>().As<IMessageDialogService>(); //MessageBox service
 
             //Usługa przeglądania itemów na listach
-            builder.RegisterType<LookupDataService>().AsImplementedInterfaces();
+            builder.RegisterType<LookupDataService>().AsImplementedInterfaces(); // Skorzysta z interfejsu który jest wymagany, AsImplemented
 
-            //Usługi bazodanowe, wrapper
+            //Repozytoria
             builder.RegisterType<FriendRepository>().As<IFriendRepository>();
+            builder.RegisterType<MeetingRepository>().As<IMeetingRepository>();
 
             return builder.Build();
         }

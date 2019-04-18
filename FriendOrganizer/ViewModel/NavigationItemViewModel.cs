@@ -9,19 +9,21 @@ using FriendOrganizer.UI.ViewModel;
 using Prism.Commands;
 using Prism.Events;
 
-namespace FriendOrganizer.ViewModel
+namespace FriendOrganizer.UI.ViewModel
 {
     public class NavigationItemViewModel : ViewModelBase
     {
         private string _displayMember;
         private IEventAggregator _eventAggregator;
+        private string _detailViewModelName;
 
-        public NavigationItemViewModel(int id, string displayMember, IEventAggregator eventAggregator)
+        public NavigationItemViewModel(int id, string displayMember, string detailViewModelName, IEventAggregator eventAggregator)
         {
             Id = id;
             DisplayMember = displayMember;
-            OpenFriendDetailViewCommand = new DelegateCommand(OnOpenFriendDetailView);
+            OpenDetailViewCommand = new DelegateCommand(OnOpenDetailViewExecute);
             _eventAggregator = eventAggregator;
+            _detailViewModelName = detailViewModelName;
         }        
 
         public int Id { get; set; }
@@ -35,12 +37,12 @@ namespace FriendOrganizer.ViewModel
             }
         }
 
-        public ICommand OpenFriendDetailViewCommand { get; }
+        public ICommand OpenDetailViewCommand { get; }
 
-        private void OnOpenFriendDetailView()
+        private void OnOpenDetailViewExecute()
         {
-            _eventAggregator.GetEvent<OpenFriendDetailViewEvent>()
-                .Publish(Id);
+            _eventAggregator.GetEvent<OpenDetailViewEvent>()
+                .Publish(new OpenDetailViewEventArgs(){Id = Id, ViewModelName = _detailViewModelName});
         }
     }
 }

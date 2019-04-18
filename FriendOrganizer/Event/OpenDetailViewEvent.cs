@@ -5,16 +5,16 @@ using System.Text;
 using System.Threading.Tasks;
 using Prism.Events;
 
-namespace FriendOrganizer.Event
+namespace FriendOrganizer.UI.Event
 {
-    public class AfterFriendSavedEvent : PubSubEvent<AfterFriendSavedEventArgs>
+    public class OpenDetailViewEvent : PubSubEvent<OpenDetailViewEventArgs>
     {
 
     }
 
-    public class AfterFriendSavedEventArgs
+    public class OpenDetailViewEventArgs
     {
         public int Id { get; set; }
-        public string DisplayMember { get; set; }
+        public string ViewModelName { get; set; }
     }
 }

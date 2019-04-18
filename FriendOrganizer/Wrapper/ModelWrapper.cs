@@ -6,7 +6,7 @@ using System.Linq;
 namespace FriendOrganizer.UI.Wrapper
 {
     /// <summary>
-    /// Klasa opakowująca model, korzystamy z generyków przez co opakujemy każdy model. Wywołuje walidację. Ustawia propertisy.
+    /// Klasa opakowująca model, korzystamy z generyków przez co opakujemy każdy model. Wywołuje walidację. Ustawia propertisy Set Get.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class ModelWrapper<T> : NotifyDataErrorInfoBase
