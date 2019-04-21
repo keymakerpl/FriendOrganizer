@@ -24,7 +24,10 @@ namespace FriendOrganizer.UI
         private void App_OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
             MessageBox.Show("Unexpected error occured."
-                            + Environment.NewLine + e.Exception.Message, "Unexpected Error");
+                            + Environment.NewLine + e.Exception.Message 
+                            + "Inner exception:"
+                            + Environment.NewLine + e.Exception.InnerException != null ? e.Exception.InnerException.Message : ""
+                                , "Unexpected Error");
 
             e.Handled = true;
         }

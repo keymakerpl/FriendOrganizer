@@ -59,7 +59,10 @@ namespace FriendOrganizer.UI.ViewModel
             IProgrammingLanguageLookupDataService programmingLanguageLookupDataService) : base(eventAggregator, dialogService)
         {
             _repository = repository;
-            _programmingLanguagesLookupService = programmingLanguageLookupDataService;            
+            _programmingLanguagesLookupService = programmingLanguageLookupDataService;
+
+            eventAggregator.GetEvent<AfterCollectionSavedEvent>()
+                .Subscribe(AfterCollectionSaved);
 
             AddPhoneNumberCommand = new DelegateCommand(OnAddPhoneNumberExecute);
             RemovePhoneNumberCommand = new DelegateCommand(OnRemovePhoneNumberExecute, OnRemovePhoneNumberCanExecute);
@@ -67,6 +70,14 @@ namespace FriendOrganizer.UI.ViewModel
             //Właściwość do przechowania lookup itemów w liście
             ProgrammingLanguages = new ObservableCollection<LookupItem>();
             PhoneNumbers = new ObservableCollection<FriendPhoneNumberWrapper>();
+        }
+
+        private async void AfterCollectionSaved(AfterCollectionSavedEventArgs args)
+        {
+            if (args.ViewModelName == nameof(ProgrammingLanguageDetailViewModel))
+            {
+                await LoadProgrammingLanguagesAsync();
+            }
         }
 
         public override async Task LoadAsync(int friendId)
@@ -91,7 +102,6 @@ namespace FriendOrganizer.UI.ViewModel
 
         private void InitFriend(Friend friend)
         {
-            int? friendId;
             //Opakowanie modelu detala w ModelWrapper aby korzystał z walidacji propertisów
             Friend = new FriendWrapper(friend);
 
