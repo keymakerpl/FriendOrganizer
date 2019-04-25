@@ -47,5 +47,8 @@ namespace FriendOrganizer.Model
         public ICollection<Meeting> Meetings { get; set; }
 
         #endregion
+
+        [Timestamp]
+        public byte[] RowVersion { get; set; }
     }
 }

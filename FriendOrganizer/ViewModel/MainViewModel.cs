@@ -112,7 +112,16 @@ namespace FriendOrganizer.UI.ViewModel
             {
                 //Pobieramy teraz odpowiedni model po kluczu. Autofac to ogarnie.
                 detailViewModel = _detailViewModelCreator[args.ViewModelName];
-                await detailViewModel.LoadAsync(args.Id);
+                try
+                {
+                    await detailViewModel.LoadAsync(args.Id);
+                }
+                catch
+                {
+                    _messageDialogService.ShowInfoDialog("Has been deleted");
+                    await NavigationViewModel.LoadAsync();
+                    return;
+                }
                 DetailViewModels.Add(detailViewModel);
             }
 
