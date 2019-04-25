@@ -35,6 +35,8 @@ namespace FriendOrganizer.UI.Startup
                 .Keyed<IDetailViewModel>(nameof(FriendDetailViewModel));
             builder.RegisterType<MeetingDetailViewModel>()
                 .Keyed<IDetailViewModel>(nameof(MeetingDetailViewModel));
+            builder.RegisterType<ProgrammingLanguageDetailViewModel>()
+                .Keyed<IDetailViewModel>(nameof(ProgrammingLanguageDetailViewModel));            
 
             //Serwisy
             builder.RegisterType<MessageDialogService>().As<IMessageDialogService>(); //MessageBox service
@@ -45,6 +47,7 @@ namespace FriendOrganizer.UI.Startup
             //Repozytoria
             builder.RegisterType<FriendRepository>().As<IFriendRepository>();
             builder.RegisterType<MeetingRepository>().As<IMeetingRepository>();
+            builder.RegisterType<ProgrammingLanguageRepository>().As<IProgrammingLanguageRepository>();
 
             return builder.Build();
         }

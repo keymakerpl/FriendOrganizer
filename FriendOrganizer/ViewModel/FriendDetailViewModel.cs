@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Data;
+using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -59,7 +61,10 @@ namespace FriendOrganizer.UI.ViewModel
             IProgrammingLanguageLookupDataService programmingLanguageLookupDataService) : base(eventAggregator, dialogService)
         {
             _repository = repository;
-            _programmingLanguagesLookupService = programmingLanguageLookupDataService;            
+            _programmingLanguagesLookupService = programmingLanguageLookupDataService;
+
+            eventAggregator.GetEvent<AfterCollectionSavedEvent>()
+                .Subscribe(AfterCollectionSaved);
 
             AddPhoneNumberCommand = new DelegateCommand(OnAddPhoneNumberExecute);
             RemovePhoneNumberCommand = new DelegateCommand(OnRemovePhoneNumberExecute, OnRemovePhoneNumberCanExecute);
@@ -67,6 +72,14 @@ namespace FriendOrganizer.UI.ViewModel
             //Właściwość do przechowania lookup itemów w liście
             ProgrammingLanguages = new ObservableCollection<LookupItem>();
             PhoneNumbers = new ObservableCollection<FriendPhoneNumberWrapper>();
+        }
+
+        private async void AfterCollectionSaved(AfterCollectionSavedEventArgs args)
+        {
+            if (args.ViewModelName == nameof(ProgrammingLanguageDetailViewModel))
+            {
+                await LoadProgrammingLanguagesAsync();
+            }
         }
 
         public override async Task LoadAsync(int friendId)
@@ -91,7 +104,6 @@ namespace FriendOrganizer.UI.ViewModel
 
         private void InitFriend(Friend friend)
         {
-            int? friendId;
             //Opakowanie modelu detala w ModelWrapper aby korzystał z walidacji propertisów
             Friend = new FriendWrapper(friend);
 
@@ -180,13 +192,13 @@ namespace FriendOrganizer.UI.ViewModel
 
         protected override async void OnSaveExecute()
         {
-            await _repository.SaveAsync();
-            HasChanges = _repository.HasChanges(); // Po zapisie ustawiamy flagę na false jeśli nie ma zmian w repo
-
-            Id = Friend.Id; //odśwież Id friend wrappera
-
-            //Powiadom agregator eventów, że zapisano
-            RaiseDetailSavedEvent(Friend.Id, $"{Friend.FirstName} {Friend.LastName}");            
+            await SaveWithOptimisticConcurrencyAsync(_repository.SaveAsync, () =>
+            {
+                HasChanges = _repository.HasChanges(); // Po zapisie ustawiamy flagę na false jeśli nie ma zmian w repo
+                Id = Friend.Id; //odśwież Id friend wrappera
+                //Powiadom agregator eventów, że zapisano
+                RaiseDetailSavedEvent(Friend.Id, $"{Friend.FirstName} {Friend.LastName}");
+            });          
         }
 
         protected override async void OnDeleteExecute()

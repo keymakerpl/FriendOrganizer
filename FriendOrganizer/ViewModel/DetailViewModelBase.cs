@@ -1,6 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Data.Entity.Infrastructure;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using FriendOrganizer.Event;
+using FriendOrganizer.Model;
+using FriendOrganizer.UI.Data.Repositories;
 using FriendOrganizer.View.UI.Services;
 using Prism.Commands;
 using Prism.Events;
@@ -50,6 +55,48 @@ namespace FriendOrganizer.UI.ViewModel
         public ICommand DeleteCommand { get; private set; }
 
         public ICommand CloseDetailViewCommand { get; set; }
+
+        /// <summary>
+        /// Zapisuje optymistycznie, ze sprawdzaniem czy nadpisać
+        /// </summary>
+        /// <param name="saveFunc">Funkcja z repo SaveAsync() zwracająca Task</param>
+        /// <param name="afterSaveAction">Metoda wykonuje instrukcje po zapisie, możesz użyć lambdy</param>
+        /// <returns></returns>
+        protected async Task SaveWithOptimisticConcurrencyAsync(Func<Task> saveFunc, Action afterSaveAction)
+        {
+            try
+            {
+                await saveFunc();
+            }
+            catch (DbUpdateConcurrencyException e) // rowversion się zmienił - ktoś inny zmienił dane
+            {
+                var databaseValues = e.Entries.Single().GetDatabaseValues();
+                if (databaseValues == null) //sprawdzamy czy jest nadal w bazie
+                {
+                    MessageDialogService.ShowOkCancelDialog("The entity has been deleted by another user.", Title);
+                    RaiseDetailDeletedEvent(Id);
+                    return;
+                }
+
+                var dialogResult =
+                    MessageDialogService.ShowOkCancelDialog(
+                        "Someone else has made changes in database. Override data with yours?", Title);
+
+                if (dialogResult == MessageDialogRessult.OK)
+                {
+                    var entry = e.Entries.Single(); //pobierz krotkę której nie można zapisać
+                    entry.OriginalValues.SetValues(entry.GetDatabaseValues()); //pobierz aktualne dane z db (aby zaktualizować rowversion w current row)
+                    await saveFunc(); //zapisz
+                }
+                else
+                {
+                    await e.Entries.Single().ReloadAsync(); //przeładuj cache krotki z bazy
+                    await LoadAsync(Id); //załaduj ponownie model
+                }
+            }
+
+            afterSaveAction();            
+        }
 
         protected abstract void OnSaveExecute();
 
@@ -107,6 +154,15 @@ namespace FriendOrganizer.UI.ViewModel
                 .Publish(new AfterDetailDeletedEventArgs()
                 {
                     Id = modelId,
+                    ViewModelName = this.GetType().Name
+                });
+        }
+
+        protected virtual void RaiseCollectionSavedEvent()
+        {
+            EventAggregator.GetEvent<AfterCollectionSavedEvent>()
+                .Publish(new AfterCollectionSavedEventArgs()
+                {
                     ViewModelName = this.GetType().Name
                 });
         }

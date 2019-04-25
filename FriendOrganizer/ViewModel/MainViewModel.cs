@@ -21,6 +21,7 @@ namespace FriendOrganizer.UI.ViewModel
         public ObservableCollection<IDetailViewModel> DetailViewModels { get; }
         public INavigationViewModel NavigationViewModel { get; }
         public ICommand CreateNewDetailCommand { get; }
+        public ICommand OpenSingleDetailViewCommand { get; }
 
         private IDetailViewModel _selectedDetailViewModel;
         public IDetailViewModel SelectedDetailViewModel
@@ -61,6 +62,12 @@ namespace FriendOrganizer.UI.ViewModel
                 .Subscribe(AfterDetailClosed);
 
             CreateNewDetailCommand = new DelegateCommand<Type>(OnCreateNewDetailExecute);
+            OpenSingleDetailViewCommand = new DelegateCommand<Type>(OpenSingleDetailViewExecute);
+        }
+
+        private void OpenSingleDetailViewExecute(Type viewModelType)
+        {
+            OnOpenDetailView(new OpenDetailViewEventArgs() { Id = -1, ViewModelName = viewModelType.Name });
         }
 
         private void AfterDetailClosed(AfterDetailClosedEventArgs args)
@@ -105,7 +112,16 @@ namespace FriendOrganizer.UI.ViewModel
             {
                 //Pobieramy teraz odpowiedni model po kluczu. Autofac to ogarnie.
                 detailViewModel = _detailViewModelCreator[args.ViewModelName];
-                await detailViewModel.LoadAsync(args.Id);
+                try
+                {
+                    await detailViewModel.LoadAsync(args.Id);
+                }
+                catch
+                {
+                    _messageDialogService.ShowInfoDialog("Has been deleted");
+                    await NavigationViewModel.LoadAsync();
+                    return;
+                }
                 DetailViewModels.Add(detailViewModel);
             }
 

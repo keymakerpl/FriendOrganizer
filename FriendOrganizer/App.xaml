@@ -11,7 +11,7 @@
 
         <!-- Zadefiniowane style dla pól tekstowych</-->
         <Style TargetType="TextBox">
-             <Setter Property="Validation.ErrorTemplate">
+            <Setter Property="Validation.ErrorTemplate">
                  <Setter.Value>
                      <ControlTemplate>
                         <StackPanel>
@@ -22,14 +22,15 @@
                      </ControlTemplate>
                  </Setter.Value>
              </Setter>
-             <Style.Triggers>
-                 <Trigger Property="Validation.HasError" Value="True">
-                    <Setter Property="Background" Value="Firebrick"/>
+            <Style.Triggers>
+                <Trigger Property="Validation.HasError" Value="True">
+                    <Setter Property="BorderBrush" Value="Firebrick"/>
                     <Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self}, 
                         Path=(Validation.Errors)[0].ErrorContent}"/>
-                 </Trigger>
-             </Style.Triggers>
-         </Style>
+                    <Setter Property="BorderThickness" Value="2"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
 
         <!-- Style dla gridów</-->
         <Style x:Key="DataGridColumnStyle" TargetType="TextBlock">
@@ -41,10 +42,11 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
+
         <Style x:Key="DataGridEditingColumnStyle" TargetType="TextBox">
             <Style.Triggers>
                 <Trigger Property="Validation.HasError" Value="True">
-                    <Setter Property="Background" Value="Firebrick"/>
+                    <Setter Property="BorderBrush" Value="Firebrick"/>
                     <Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self}, 
                         Path=(Validation.Errors)[0].ErrorContent}"/>
                 </Trigger>
