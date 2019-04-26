@@ -209,8 +209,8 @@ namespace FriendOrganizer.UI.ViewModel
                 return;
             }
 
-            var result = MessageDialogService.ShowOkCancelDialog("Delete?", "Confirm");
-            if (result == MessageDialogRessult.Cancel) return;
+            var result = await MessageDialogService.ShowOkCancelDialog("Delete?", "Confirm");
+            if (result == MessageDialogResult.Cancel) return;
 
             _repository.Remove(Friend.Model);
             await _repository.SaveAsync();

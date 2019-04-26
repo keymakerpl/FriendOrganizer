@@ -209,13 +209,13 @@ namespace FriendOrganizer.UI.ViewModel
             return Meeting != null && !Meeting.HasErrors && HasChanges;
         }
 
-        protected override void OnDeleteExecute()
+        protected async override void OnDeleteExecute()
         {
-            var result = MessageDialogService.ShowOkCancelDialog("Delete?", "Confirm");
-            if (result == MessageDialogRessult.Cancel) return;
+            var result = await MessageDialogService.ShowOkCancelDialog("Delete?", "Confirm");
+            if (result == MessageDialogResult.Cancel) return;
 
             _repository.Remove(Meeting.Model);
-            _repository.SaveAsync();
+            await _repository.SaveAsync();
             RaiseDetailDeletedEvent(Meeting.Id);
         }
     }

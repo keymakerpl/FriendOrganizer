@@ -29,13 +29,13 @@ namespace FriendOrganizer.UI.ViewModel
             CloseDetailViewCommand = new DelegateCommand(OnCloseDetailViewExecute);
         }
 
-        protected virtual void OnCloseDetailViewExecute()
+        protected async virtual void OnCloseDetailViewExecute()
         {
             if (HasChanges)
             {
-                var result = MessageDialogService.ShowOkCancelDialog("Continue and Cancel changes?", Title);
+                var result = await MessageDialogService.ShowOkCancelDialog("Continue and Cancel changes?", Title);
 
-                if (result == MessageDialogRessult.Cancel)
+                if (result == MessageDialogResult.Cancel)
                 {
                     return;
                 }
@@ -79,10 +79,10 @@ namespace FriendOrganizer.UI.ViewModel
                 }
 
                 var dialogResult =
-                    MessageDialogService.ShowOkCancelDialog(
+                    await MessageDialogService.ShowOkCancelDialog(
                         "Someone else has made changes in database. Override data with yours?", Title);
 
-                if (dialogResult == MessageDialogRessult.OK)
+                if (dialogResult == MessageDialogResult.OK)
                 {
                     var entry = e.Entries.Single(); //pobierz krotkę której nie można zapisać
                     entry.OriginalValues.SetValues(entry.GetDatabaseValues()); //pobierz aktualne dane z db (aby zaktualizować rowversion w current row)
